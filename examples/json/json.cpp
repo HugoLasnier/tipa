@@ -21,10 +21,13 @@ int main(int argc, char *argv[])
     const token tk_char = create_lib_token("^([0-9a-zA-Z]{1})");
     rule r_char = rule(tk_char);
     rule r_string = rule("\"") >> *r_char >> rule("\"");
-    rule keyVal = r_string >> rule(":") >> r_string;
-    rule keyValComma = keyVal >> rule(",");
-    rule multipleKeyVal = *keyValComma >> keyVal;
-    rule root = rule("{") >> multipleKeyVal >> rule("}");
+    rule key_value = r_string >> rule(":") >> r_string;
+
+    rule key_values = *(key_value >> rule(",")) >> key_value;
+    rule bracket = (rule("{") >> key_values >> rule("}")) | rule("{") >> rule("}");
+
+    rule root = *(bracket >> rule(";")) >> bracket;
+
 
 
     
@@ -32,11 +35,16 @@ int main(int argc, char *argv[])
 
     // An example of json file to parse
     std::stringstream sst(
-        "{"
-        "\" key1 \" : \" val1 \","
+    	"{"
+         "\" key1 \" : \" val1 \","
         "\" key2 \" : \" val2 \","
         "\" key3 \" : \" val3 \""
-        "}"
+        "};"
+        "{"
+        "\" key1 \" : \" val1 \""
+        "};"
+        "{}"
+        
     );
     
     parser_context pc;
