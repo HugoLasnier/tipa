@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     rule key_values = *(key_value >> rule(",")) >> key_value;
     rule bracket = (rule("{") >> key_values >> rule("}")) | rule("{") >> rule("}");
 
-    rule root = *(bracket >> rule(";")) >> bracket;
+    rule root = *(bracket >> rule(",")) >> bracket;
 
 
 
@@ -39,10 +39,10 @@ int main(int argc, char *argv[])
          "\" key1 \" : \" val1 \","
         "\" key2 \" : \" val2 \","
         "\" key3 \" : \" val3 \""
-        "};"
+        "},"
         "{"
         "\" key1 \" : \" val1 \""
-        "};"
+        "},"
         "{}"
         
     );
