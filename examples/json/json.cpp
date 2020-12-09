@@ -6,6 +6,7 @@
 #include <memory>
 #include <tuple>
 #include <map>
+#include <vector>
 
 
 #include <tinyparser.hpp>
@@ -62,6 +63,29 @@ public:
     virtual string toString(){ return "null";}
 };
 
+class ArrayValue : public Value {
+    private:
+        vector<shared_ptr<Value>> values;
+
+    public:
+        virtual string toString(){
+            vector< shared_ptr<Value> >::iterator itr = values.begin();
+            string res = "";
+            while(itr != values.end())
+            {
+                if(itr != values.begin()) res += ",";
+                res += (*itr)->toString();
+                itr++;
+            }
+             return res;
+        }
+
+        
+        ArrayValue(vector<shared_ptr<Value>> val){
+            this->values = val;
+        }
+};
+
 class builder {
     stack<string> st1;
     stack< shared_ptr<Value> > st2;
@@ -76,7 +100,7 @@ public:
         st1.push(v);
     }
 
-    void make_KeyValue(parser_context &pc){
+    void make_member(parser_context &pc){
         string key = st1.top(); st1.pop();
         auto val = st2.top(); st2.pop();
         js[key] = val;
@@ -122,6 +146,19 @@ public:
         st2.push(bv);
     }
 
+    void make_ArrayValue(parser_context &pc){
+        auto x = pc.collect_tokens();
+        if (x.size() < 1) throw string("Error in collecting variable");
+        vector<shared_ptr<Value>> v;
+        while(! st2.empty()){
+            v.insert(v.begin(), st2.top());
+            st2.pop();
+        }
+
+        auto nv = make_shared<ArrayValue>(v);
+        st2.push(nv);
+    }
+
     void printContent(){
         map<string, shared_ptr<Value>>::iterator it;
 
@@ -141,18 +178,21 @@ int main(int argc, char *argv[]){
 
     //data types
 
-    rule r_anyType;
+    rule r_element;
+    rule r_elements;
     rule r_number = rule(tk_int);
     rule r_float = rule(tk_float);
     rule r_boolean = rule (tk_true) | rule(tk_false); // | rule("false");
     rule r_null = rule(tk_null); //rule r_null = rule("null");
     rule r_string = rule("\"") >> rule(tk_ident) >> rule("\"");
     rule r_key = rule("\"") >> rule(tk_ident) >> rule("\"") >> rule(":");
-	rule r_array = rule(tk_op_sq)>> *(r_anyType >> rule(tk_comma)) >> r_anyType >>rule(tk_cl_sq);
-	rule key_value = r_key >> r_anyType;
-    rule key_values = *(key_value >> rule(tk_comma)) >> key_value;
-    rule r_object= (rule(tk_op_br) >> key_values >> rule(tk_cl_br)) | rule(tk_op_br) >> rule(tk_cl_br);
-    r_anyType = ( r_object | r_array | r_null | r_boolean | r_string | r_float | r_number );
+	rule r_array = rule(tk_op_sq)>> r_elements  >> rule(tk_cl_sq);
+	rule r_menber = r_key >> r_element;
+    rule r_menbers = *(r_menber >> rule(tk_comma)) >> r_menber;
+    rule r_object = (rule(tk_op_br) >> r_menbers >> rule(tk_cl_br)) | rule(tk_op_br) >> rule(tk_cl_br);
+    r_element = (r_object | r_array | r_null | r_boolean | r_string | r_float | r_number);
+    r_elements = *(r_element >> rule(tk_comma)) >> r_element;
+
     rule root =  r_object;
     
     //----------------  end of parser specification -------------
@@ -170,8 +210,9 @@ int main(int argc, char *argv[]){
     	"}"
     );*/
 
-    stringstream sst(
+    /*stringstream sst(
         "{"
+        "\"Array\" : [ [1,2,3], 4, 8 ],"
         "\"aString\" : \"Hello\","
         "\"a1\" : 1,"
         "\"b2\" : 25,"
@@ -180,6 +221,13 @@ int main(int argc, char *argv[]){
         "\"bkey2\" : false,"
         "\"nullKey\" : null,"
         "\"Pi\" : 3.14"
+        "}"
+    );*/
+
+    stringstream sst(
+        "{"
+        "\"Array\" : [ [1,2,3], 4, 8 ],"
+        "\"Array2\" : [ [99, 100]]"
         "}"
     );
 
@@ -191,7 +239,9 @@ int main(int argc, char *argv[]){
     r_number.   set_action(std::bind(&builder::make_IntValue,            &b, _1));
     r_key.   set_action(bind(&builder::make_Key,            &b, _1));
     r_string.   set_action(bind(&builder::make_StringValue,            &b, _1));
-    key_value.   set_action(bind(&builder::make_KeyValue,            &b, _1));
+    r_menber.   set_action(bind(&builder::make_member,            &b, _1));
+    //r_elements.   set_action(bind(&builder::make_ArrayValue,            &b, _1));
+    r_array.   set_action(bind(&builder::make_ArrayValue,            &b, _1));
     
     parser_context pc;
     pc.set_stream(sst);
