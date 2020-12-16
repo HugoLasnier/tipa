@@ -192,7 +192,7 @@ int main(int argc, char *argv[]){
     rule r_menbers = *(r_menber >> rule(tk_comma)) >> r_menber;
     rule r_object = (rule(tk_op_br) >> r_menbers >> rule(tk_cl_br)) | rule(tk_op_br) >> rule(tk_cl_br);
     r_element = (r_object | r_array | r_null | r_boolean | r_string | r_float | r_number);
-    r_elements = *(r_element >> rule(tk_comma)) >> r_element;
+    r_elements = r_element >> *(rule(tk_comma) >> r_element);
 
     rule root =  r_object;
     
@@ -211,9 +211,10 @@ int main(int argc, char *argv[]){
     	"}"
     );*/
 
-    /*stringstream sst(
+    stringstream sst(
         "{"
         "\"Array\" : [ [1,2,3], 4, 8 ],"
+        "\"Array2\" : [ [99, 100]],"
         "\"aString\" : \"Hello\","
         "\"a1\" : 1,"
         "\"b2\" : 25,"
@@ -222,13 +223,6 @@ int main(int argc, char *argv[]){
         "\"bkey2\" : false,"
         "\"nullKey\" : null,"
         "\"Pi\" : 3.14"
-        "}"
-    );*/
-
-    stringstream sst(
-        "{"
-        "\"Array\" : [ [1,2,3], 4, 8 ],"
-        "\"Array2\" : [ [99, 100]]"
         "}"
     );
 
