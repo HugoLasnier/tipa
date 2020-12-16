@@ -70,14 +70,15 @@ class ArrayValue : public Value {
     public:
         virtual string toString(){
             vector< shared_ptr<Value> >::iterator itr = values.begin();
-            string res = "";
+            string res = "[";
             while(itr != values.end())
             {
                 if(itr != values.begin()) res += ",";
                 res += (*itr)->toString();
                 itr++;
             }
-             return res;
+            res += "]";
+            return res;
         }
 
         
