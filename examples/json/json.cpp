@@ -87,7 +87,32 @@ class ArrayValue : public Value {
         }
 };
 
+class ObjectValue : public Value {
+    private:
+        map<string, shared_ptr<Value>> keysValues;
+
+    public:
+
+        virtual string toString(){
+            string res = "{ ";
+            map<string, shared_ptr<Value>>::iterator it;
+            for( it = this->keysValues.begin(); it != this->keysValues.end(); it++ ){
+                if(it != this->keysValues.begin()) res += ", ";
+                res += it->first;
+                res += ":";
+                res += it-> second->toString();
+            }
+            return res + " }";
+        }
+
+        ObjectValue(map<string, shared_ptr<Value>> kv){
+            this->keysValues = kv;
+        }
+};
+
+
 class builder {
+    stack<ObjectValue> objectsStack;
     stack<string> st1;
     stack< shared_ptr<Value> > st2;
     map<string, shared_ptr<Value>> js;
@@ -155,9 +180,14 @@ public:
             v.insert(v.begin(), st2.top());
             st2.pop();
         }
-
         auto nv = make_shared<ArrayValue>(v);
         st2.push(nv);
+    }
+
+    void make_ObjectValue(parser_context &pc){
+        auto ov = make_shared<ObjectValue>(js);
+        st2.push(ov);
+
     }
 
     void printContent(){
@@ -213,6 +243,7 @@ int main(int argc, char *argv[]){
 
     stringstream sst(
         "{"
+        "\"anObject\" : {\"a\" : 14, \"b\": 15},"
         "\"Array\" : [ [1,2,3], 4, 8 ],"
         "\"Array2\" : [ [99, 100]],"
         "\"aString\" : \"Hello\","
@@ -235,8 +266,8 @@ int main(int argc, char *argv[]){
     r_key.   set_action(bind(&builder::make_Key,            &b, _1));
     r_string.   set_action(bind(&builder::make_StringValue,            &b, _1));
     r_menber.   set_action(bind(&builder::make_member,            &b, _1));
-    //r_elements.   set_action(bind(&builder::make_ArrayValue,            &b, _1));
     r_array.   set_action(bind(&builder::make_ArrayValue,            &b, _1));
+    r_object.  set_action(bind(&builder::make_ObjectValue,            &b, _1));
     
     parser_context pc;
     pc.set_stream(sst);
