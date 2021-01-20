@@ -1,5 +1,6 @@
 include_directories (.)
 include_directories (../src)
+include_directories (../examples/json)
 
 set (TIPA_TEST_LIBRARY ${PROJECT_NAME}_test)
 
@@ -39,3 +40,11 @@ create_test (TestVisitor   test_visitor.cpp)
 create_test (TestAction    test_action.cpp)
 create_test (TestList      test_list.cpp)
 create_test (TestErrorMsg  test_error_msg.cpp)
+
+#Test Json
+set (JSON_TEST_NAME test_json)
+set (JSON_TEST_SOURCE test_json.cpp)
+add_executable (${JSON_TEST_NAME} ${JSON_TEST_SOURCE})
+target_compile_features (${JSON_TEST_NAME} PRIVATE cxx_range_for)
+target_link_libraries (${JSON_TEST_NAME} ${TIPA_JSON_LIBRARY} ${TIPA_TEST_LIBRARY} ${PROJECT_NAME})
+add_test (NAME ${JSON_TEST_NAME} COMMAND ${JSON_TEST_NAME})
