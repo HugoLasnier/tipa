@@ -2,8 +2,8 @@
 include_directories (.)
 include_directories (../../src)
 
-set (EXECUTABLE_NAME transition)
-set (EXECUTABLE_SOURCES transition.cpp)
+set (EXECUTABLE_NAME scxml)
+set (EXECUTABLE_SOURCES scxml.cpp scxml.h main.cpp)
 
 # Create the executable.
 add_executable (${EXECUTABLE_NAME} ${EXECUTABLE_SOURCES})
