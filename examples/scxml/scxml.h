@@ -40,7 +40,7 @@ private:
 
     string id;
     vector<Transition> transitions;
-    vector<State> *states;
+    vector<State> states;
     const Transition transition;
 public:
     const vector<Transition> &getTransitions() const;
@@ -52,6 +52,8 @@ public:
     State(const string id);
 
     void addTransition(Transition transition);
+
+    const vector<State> &getStates() const;
 
     void addState(State state);
 

@@ -38,17 +38,21 @@ State::State(const string &id, const Transition &transition) : id(id), transitio
 State::State(const string id) : id(id) {}
 
 void State::addTransition(Transition transition) {
-    this->transitions.push_back(transition);
+    transitions.push_back(transition);
 }
 
 void State::addState(State state) {
-    this->states->push_back(state);
+    states.push_back(state);
+}
+
+const vector<State> &State::getStates() const {
+    return states;
 }
 
 
 void Context::to(State *state) {
     cout << "Changing State" << endl;
-    this->state_ = state;
+    state_ = state;
 }
 
 void Context::show() const {

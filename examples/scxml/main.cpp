@@ -18,10 +18,11 @@ int main() {
     // a transitions has a sequence of properties.
     rule transition = rule("<transition") >> *property >> rule("/>");
     // a state is a list of transition.
-    rule state = rule("<state>") >> id >> *transition >> rule("/>");
+    rule state = rule("<state ") >> id >> rule (">") >> *transition >> rule("</state>");
+
     // the whole file is just a list of transitions
-    rule root = *transition;
-    //rule root = *state;
+    //rule root = *transition;
+    rule root = *state;
     struct Transitions {
         std::string event;
         std::string cond;
@@ -50,8 +51,9 @@ int main() {
     // now the parser actions
     // when the parser finds an event, store the values in the temp variable
     id.read_vars(tmp.id);
-    /*
+    cout << "l id :" << tmp.id << endl;
     if(tmp.know()) {
+        cout << "entering the condition " << endl;
         //auto *nb.at(n) = new State(tmp.id);
         auto *s1 = new State(tmp.id);
         event.read_vars(temp.event);
@@ -65,8 +67,9 @@ int main() {
         }
         s->addState(*s1);
     }
-    */
+
     event.read_vars(temp.event);
+    //cout << "l'event : "<< temp.event<<endl;
     // same for cond
     //cond.read_vars(temp.cond);
     // same for target
@@ -84,7 +87,7 @@ int main() {
      */
     // now the data structures we are going to fill
     std::stringstream sst(
-            //"<state id=s>\n"
+            "<state id=\"s\">\n"
             "<transition\n"
             "event=\"e1\"\n"
             "target=\"s1\"\n"
@@ -97,7 +100,7 @@ int main() {
             "event=\"e3\"\n"
             "target=\"s3\"\n"
             "/>\n"
-            //"</state>"
+            "</state>"
     );
     parser_context pc;
     pc.set_stream(sst);
@@ -113,7 +116,7 @@ int main() {
     cout << "la taille : " << transitions.size() << endl;
 
 
-
+    /*
     for (const auto &x : transitions) {
         std::cout << "-----------" << std::endl;
         std::cout << "event: " << x.event << std::endl;
@@ -121,7 +124,7 @@ int main() {
         std::cout << "target: " << x.target << std::endl;
         s->addTransition(*new Transition(new Event(x.event), new State(x.target)));
     }
+     */
     auto *ct = new Context(s);
     ct->work();
-
 }
