@@ -6,78 +6,85 @@
 using namespace tipa;
 using namespace std;
 
-Event::Event(string name_) : name(name_) {}
+string Value::toString(){return "value";}
 
-const string &Event::getName() const {
-    return name;
+void builder::make_Id(parser_context &pc) {
+    auto x = pc.collect_tokens();
+    if (x.size() < 1) throw string("Error in collecting variable");
+    string v = x[x.size()-1].second;
+    cout << "My Id :" << v << endl;
+}
+void builder::make_Event(parser_context &pc) {
+    auto x = pc.collect_tokens();
+    if (x.size() < 1) throw string("Error in collecting variable");
+    string v = x[x.size()-1].second;
+    cout << "My Event : " << v <<endl;
+    st1.push(v);
+}
+void builder::make_target(parser_context &pc){
+    auto x = pc.collect_tokens();
+    if (x.size() < 1) throw string("Error in collecting variable");
+    string v = x[x.size()-1].second;
+    cout << "My Target : " << v << endl;
+    st1.push(v);
+}
+void builder::make_State(parser_context &pc) {
+    //auto x = pc.collect_tokens();
+    //if (x.size() < 1) throw string("Error in collecting variable");
+    //string v = x[x.size()-1].second.c_str();
+    //int v = x[x.size()-1].second.size();
+    //cout << v;
+    //st1.push(v);
+}
+void builder::make_Transition(parser_context &pc) {
+    cout << "END of Transition" << endl;
+    //if (x.size() < 1) throw string("Error in collecting variable");
+    //string v = x[x.size()-1].second;
+    //cout << v;
+    //st1.push(v);
+}
+void builder::make_EofState(parser_context &pc) {
+    cout << "END of State" << endl;
+    //if (x.size() < 1) throw string("Error in collecting variable");
+    //string v = x[x.size()-1].second;
+    //cout << v;
+    //st1.push(v);
+}
+void builder::make_EofTransition(parser_context &pc) {
+    cout << "End of transition " << endl;
+}
+void builder::printScxml() {
 }
 
-Event *Transition::getEvent() const {
-    return event;
+scxml::scxml(){
+    r_id = rule("id=") >> rule("\"") >> rule(tk_ident) >> rule("\"");
+    r_event = rule("event=") >> rule("\"") >> rule(tk_ident) >> rule("\"");
+    r_target = rule("target=") >> rule("\"") >> rule(tk_ident) >> rule("\"");
+    r_transition = rule("<transition") >> r_event >> r_target >> r_eof_transition;
+    r_property = r_transition | r_state;
+    r_eof_state = rule("</state>");
+    r_eof_transition = rule("</transition>");
+    r_state = rule("<state ") >> r_id >> rule(">") >> *r_property >> r_eof_state;;
+    root =  *r_state;
 }
 
-State *Transition::getState() const {
-    return state;
-}
-
-Transition::Transition(Event *event_, State *state_) : event(event_), state(state_) {}
-
-Transition::Transition() {}
-
-
-const vector<Transition> &State::getTransitions() const {
-    return transitions;
-}
-
-const string &State::getId() const {
-    return id;
-}
-
-State::State(const string &id, const Transition &transition) : id(id), transition(transition) {}
-
-State::State(const string id) : id(id) {}
-
-void State::addTransition(Transition transition) {
-    transitions.push_back(transition);
-}
-
-void State::addState(State state) {
-    states.push_back(state);
-}
-
-const vector<State> &State::getStates() const {
-    return states;
-}
-
-
-void Context::to(State *state) {
-    cout << "Changing State" << endl;
-    state_ = state;
-}
-
-void Context::show() const {
-    cout << "Current state : " << this->state_->getId() << endl;
-}
-
-Context::Context(State *state) {
-    this->state_ = state;
-}
-
-void Context::work() {
-    this->show();
-    cout << "Enter an Event : ";
-    cin >> event;
-    if(event == "quit") exit;
-    else {
-
-
-    for (int i = 0; i < this->state_->getTransitions().size(); i++) {
-        if (this->state_->getTransitions().at(i).getEvent()->getName() == event) {
-            cout << "Current State : " << this->state_->getId() << endl
-                 << "Target State : " << this->state_->getTransitions().at(i).getState()->getId() << endl;
-            this->to(this->state_->getTransitions().at(i).getState());
-        }
+bool scxml::parsescxml(istream &in){
+    builder b;
+    using namespace std::placeholders;
+    r_id.set_action(std::bind(&builder::make_Id,&b, _1));
+    r_event.set_action(std::bind(&builder::make_Event,&b, _1));
+    r_target.set_action(std::bind(&builder::make_target,&b, _1));
+    //r_transition.set_action(std::bind(&builder::make_Transition,&b, _1));
+    r_state.set_action(std::bind(&builder::make_State,&b, _1));
+    r_eof_state.set_action(std::bind(&builder::make_EofState,&b, _1));
+    r_eof_transition.set_action(std::bind(&builder::make_EofTransition,&b, _1));
+    parser_context pc;
+    pc.set_stream(in);
+    bool f = parse_all(root, pc);
+    b.printScxml();
+    cout << "Parser status : " << boolalpha << f << endl;
+    if (!f) {
+        cout << pc.get_formatted_err_msg() << endl;
     }
-    this->work();
-    }
+    return f;
 }
