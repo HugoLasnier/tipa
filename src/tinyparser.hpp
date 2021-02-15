@@ -1,19 +1,19 @@
 /*
   Copyright 2015-2018 Giuseppe Lipari
   email: giuseppe.lipari@univ-lille.fr
-  
+
   This file is part of TiPa.
 
   TiPa is free software: you can redistribute it and/or modify it
   under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-  
+
   TiPa is distributed in the hope that it will be useful, but WITHOUT
   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
   License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with TiPa. If not, see <http://www.gnu.org/licenses/>
  */
@@ -30,16 +30,16 @@
 #define ERR_PARSE_ALT   -101
 
 namespace tipa {
-    /** 
+    /**
         Helper functions to convert from a string to a variable of
         type T
     */
-    inline void convert_to(const std::string &s, std::string& t) { t = s; }    
+    inline void convert_to(const std::string &s, std::string& t) { t = s; }
     inline void convert_to(const std::string &s, int &i) { i = std::stoi(s); }
     inline void convert_to(const std::string &s, float &f) { f = std::stof(s); }
     inline void convert_to(const std::string &s, double &d) { d = std::stod(s); }
 
-    /** 
+    /**
      * It contains the lexer and the last token that has been read,
      * that is the parser state during parsing. An object of this
      * class must be created by the user and passed to the parse()
@@ -59,17 +59,17 @@ namespace tipa {
         lexer lex;
         // the collected tokens
         std::vector<token_val> collected;
-
+        // the saved tokens
         std::stack<std::vector<token_val>> saved;
-    
+
         //token_val error_msg;
         std::stack<error_message> error_stack;
-        
+
     public:
-        parser_context(); 
+        parser_context();
 
         void set_stream(std::istream &in);
-        void set_comment(const std::string &comment_begin, 
+        void set_comment(const std::string &comment_begin,
                          const std::string &comment_end,
                          const std::string &comment_single_line);
 
@@ -85,9 +85,9 @@ namespace tipa {
         token_val get_last_token();
 
         void set_error(const token_val &tk, const std::string &err_msg);
-        void empty_error_stack(); 
+        void empty_error_stack();
         error_message get_last_error() const;
-        
+
         std::string get_error_string() const;
         std::string get_formatted_err_msg();
         bool eof();
@@ -109,9 +109,9 @@ namespace tipa {
         template<typename It, typename F=std::function<std::string(token_val)>>
         void collect_tokens(int n, It it, F fun=[](token_val tv) { return tv.second; }) {
             int s = collected.size();
-            if (s < n) 
+            if (s < n)
                 throw std::string("too few parameters");
-            
+
             auto p = begin(collected) + s - n;
             for(auto q = p; q != end(collected); q++) *(it++) = fun(*q);
             collected.erase(p, collected.end());
@@ -130,14 +130,14 @@ namespace tipa {
     /* helper functions with common actions */
 
     /**
-       Reads a token and updates a variable 
+       Reads a token and updates a variable
      */
     template<typename T>
     void read_all(parser_context &pc, T&& var)
     {
         convert_to(pc.read_token(), std::forward<T&>(var));
     }
-    
+
     /**
        Reads a sequence of N tokens to update N variables
      */
@@ -147,7 +147,7 @@ namespace tipa {
         read_all(pc, std::forward<Args&>(args)...);
         read_all(pc, std::forward<T&>(var));
     }
-    
+
 
     /// forward declaration: implementation dependent
     struct impl_rule;
@@ -157,13 +157,13 @@ namespace tipa {
 
     /** The concrete rule class */
     class rule {
-        /// Implementation 
-        std::shared_ptr<impl_rule> pimpl;    
+        /// Implementation
+        std::shared_ptr<impl_rule> pimpl;
     public:
         /// An empty rule
         rule();
         /// Copy constructor
-        rule(const rule &r); 
+        rule(const rule &r);
 
         /// A rule that matches a simple character. By default, this
         /// rule will NOT collect the character, unless the second
@@ -181,10 +181,10 @@ namespace tipa {
 
         /// Assigmnent between rules
         rule &operator=(const rule &);
-    
+
         /// Sets an action for this rule
         rule& set_action(action_t af);
-                
+
         /// Installs a special action that reads a sequence of variables
         template<typename ...Args>
         rule & read_vars(Args&&... args) {
@@ -196,7 +196,7 @@ namespace tipa {
         bool parse(parser_context &pc) const;
 
         /* -------------------------- */
-        
+
         /// This constructor is not part of the interface, it is for
         /// internal use only!!  (However it must be public to not
         /// overcomplicate the implementation)
@@ -209,7 +209,7 @@ namespace tipa {
 
     /** This creates a null rule (a rule that always matches without
      * consuming input) */
-    rule null(); 
+    rule null();
 
     /** Sequence of rules (with backtrack) */
     rule operator>>(rule &a, rule &b);
