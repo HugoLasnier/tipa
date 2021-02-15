@@ -151,19 +151,21 @@ void builder::printContent(){
 //int main(int argc, char *argv[]){
 
 json::json(){
+
+    const token tk_c = create_lib_token("^[^\"]*\\w*"); // an identifier
     r_number = rule(tk_int);
     r_float = rule(tk_float);
     r_boolean = rule (tk_true) | rule(tk_false); // | rule("false");
     r_null = rule(tk_null); //rule r_null = rule("null");
-    r_string = rule("\"") >> rule(tk_ident) >> rule("\"");
-    r_key = rule("\"") >> rule(tk_ident) >> rule("\"") >> rule(":");
+    r_string = rule("\"") >> rule(tk_c) >> rule("\"");
+    r_key = rule("\"") >> rule(tk_c) >> rule("\"") >> rule(":");
 	r_array = rule(tk_op_sq)>> r_elements  >> rule(tk_cl_sq);
 	r_menber = r_key >> r_element;
     r_menbers = *(r_menber >> rule(tk_comma)) >> r_menber;
     r_object = (rule(tk_op_br) >> r_menbers >> rule(tk_cl_br)) | rule(tk_op_br) >> rule(tk_cl_br);
     r_element = (r_object | r_array | r_null | r_boolean | r_string | r_float | r_number);
     r_elements = r_element >> *(rule(tk_comma) >> r_element);
-    root =  r_object;
+    root = r_object;
 }
 
 bool json::parsejs(istream &in){
@@ -184,7 +186,7 @@ bool json::parsejs(istream &in){
     pc.set_stream(in);
 
     bool f = parse_all(root, pc);
-    b.printContent();
+    //b.printContent();
     cout << "Parser status : " << boolalpha << f << endl;
     if (!f) {
         cout << pc.get_formatted_err_msg() << endl;

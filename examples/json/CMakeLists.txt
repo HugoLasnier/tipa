@@ -6,8 +6,8 @@ include_directories (../../test)
 set (TIPA_JSON_LIBRARY ${PROJECT_NAME}_json)
 add_library (${TIPA_JSON_LIBRARY} ${JSON_LIBRARY} json.cpp)
 
-set (EXECUTABLE_NAME main)
-set (EXECUTABLE_SOURCES main.cpp)
+set (EXECUTABLE_NAME tests)
+set (EXECUTABLE_SOURCES tests.cpp)
 
 
 # Create the executable.
