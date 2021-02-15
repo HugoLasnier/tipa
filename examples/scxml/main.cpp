@@ -1,11 +1,8 @@
-#include <string>
-#include <iostream>
-#include "vector"
-#include <tinyparser.hpp>
 #include <scxml.h>
-#include <sstream>
+
 using namespace tipa;
 using namespace std;
+
 int main() {
     stringstream sst(
             "<state id=\"une\">\n"
